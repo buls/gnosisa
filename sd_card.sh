@@ -37,10 +37,31 @@ echo "SD Card has been unmounted"
 
 echo "Formatting SD Card"
 mkfs.vfat /dev/$sd_card_name
+if [[ -s 2015-05-05-raspbian-wheezy.zip && -s 2015-05-05-raspbian-wheezy.md5 ]]; then 
+	echo "ZIP File already exists"
+	echo "Checking file validity.."
+else
+	echo "We need to connect to a server(repository) to fetch the Raspian Image"
+	echo "Please enter username of server : "
+	read user_name
+	echo "Please enter host name or ip address of server : "
+	read ip
+	scp $user_name@$ip:/home/bluefox/kalite-repo/\{2015-05-05-raspbian-wheezy.zip,2015-05-05-raspbian-wheezy.md5\} .
+fi
 
-##scp bluefox@172.16.3.203:/home/bluefox/kalite-repo/2015-05-05-raspbian-wheezy.zip .
+#md5sum
+copied_file=2015-05-05-raspbian-wheezy.zip
+md5_file=2015-05-05-raspbian-wheezy.md5
+
+md5sum $copied_file
+if md5sum -c $md5_file; then
+	echo "checksums OK"
+else
+	echo "md5 sums mismatch"
+	#delete files, reconnect to bluefox and download files
+fi	
 cd .
-#unzip 2015-05-05-raspbian-wheezy.zip
+unzip 2015-05-05-raspbian-wheezy.zip
 image_destination=/home/dawere/Gnosis
 
 echo "Please re type the name of the SD card omitting partition names : "
@@ -54,5 +75,6 @@ echo "Initiating Installation of Rapsbian OS."
 #cd $image_destination
 #echo "Installing..."
 dd bs=4M if=$image_destination/2015-05-05-raspbian-wheezy.img of=/dev/$sd_card_name_only
-
+rm 2015-05-05-raspbian-wheezy.img
 sync
+echo "Installation complete!"
